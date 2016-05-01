@@ -19,6 +19,10 @@ The chain of responsibility pattern is used to process varied requests, each of 
 
 ### Example:
 */
+protocol thingsToDoWithPilesOfMoney {
+    func canWithdraw(var v: Int) -> AnyObject
+}
+
 class MoneyPile {
     let value: Int
     var quantity: Int
@@ -58,7 +62,7 @@ class MoneyPile {
     }
 }
 
-class ATM {
+class ATM: thingsToDoWithPilesOfMoney{
     private var hundred: MoneyPile
     private var fifty: MoneyPile
     private var twenty: MoneyPile
@@ -79,7 +83,7 @@ class ATM {
         self.ten = ten
     }
     
-    func canWithdraw(value: Int) -> String {
+    func canWithdraw(value: Int) -> AnyObject {
         return "Can withdraw: \(self.startPile.canWithdraw(value))"
     }
 }
@@ -90,7 +94,7 @@ class ATM {
 let ten = MoneyPile(value: 10, quantity: 6, nextPile: nil)
 let twenty = MoneyPile(value: 20, quantity: 2, nextPile: ten)
 let fifty = MoneyPile(value: 50, quantity: 2, nextPile: twenty)
-let hundred = MoneyPile(value: 100, quantity: 1, nextPile: fifty)
+let hundred = MoneyPile(value: 100, quantity: 2, nextPile: fifty)
 
 // Build ATM.
 var atm = ATM(hundred: hundred, fifty: fifty, twenty: twenty, ten: ten)
@@ -106,10 +110,12 @@ The command pattern is used to express a request, including the call to be made 
 
 ### Example:
 */
+//Command interface
 protocol DoorCommand {
     func execute() -> String
 }
 
+//command
 class OpenCommand : DoorCommand {
     let doors:String
 
@@ -121,7 +127,7 @@ class OpenCommand : DoorCommand {
         return "Opened \(doors)"
     }
 }
-
+//command
 class CloseCommand : DoorCommand {
     let doors:String
 
@@ -134,13 +140,29 @@ class CloseCommand : DoorCommand {
     }
 }
 
+//command
+class LockCommand : DoorCommand {
+    let doors:String
+    
+    required init(doors: String) {
+        self.doors = doors
+    }
+    
+    func execute() -> String {
+        return "Locked \(doors)"
+    }
+}
+
+//Receiver
 class HAL9000DoorsOperations {
     let openCommand: DoorCommand
     let closeCommand: DoorCommand
-    
+    let lockCommand: DoorCommand
+
     init(doors: String) {
         self.openCommand = OpenCommand(doors:doors)
         self.closeCommand = CloseCommand(doors:doors)
+        self.lockCommand = LockCommand(doors:doors)
     }
     
     func close() -> String {
@@ -149,6 +171,10 @@ class HAL9000DoorsOperations {
     
     func open() -> String {
         return openCommand.execute()
+    }
+    
+    func locked() -> String {
+        return lockCommand.execute()
     }
 }
 /*:
@@ -159,6 +185,7 @@ let doorModule = HAL9000DoorsOperations(doors:podBayDoors)
 
 doorModule.open()
 doorModule.close()
+doorModule.locked()
 /*:
 🎶 Interpreter
 --------------
